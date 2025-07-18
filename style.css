@@ -1,56 +1,251 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap');
 
 :root {
-    --white: hsl(0, 0%, 100%);
-    --light-gray: hsl(212, 45%, 89%);
-    --grayish-blue: hsl(220, 15%, 55%);
-    --dark-blue: hsl(218, 44%, 22%);
-  }
+    --primary-color: #1a1a1a;
+    --secondary-color: #2d2d2d;
+    --accent-color: #4a9eff;
+    --text-color: #ffffff;
+    --border-color: #404040;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+}
 
 * {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-    background-color: var(--light-gray);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
     font-family: 'Outfit', sans-serif;
-}
-
-.container { 
-    background-color: var(--light-gray);
-    display: flex;
-    justify-content: center;
-    align-items: center;
     height: 100vh;
+    overflow: hidden;
+    color: var(--text-color);
 }
 
-.content-box {
-    background-color: var(--white);
-    border-radius: 20px;
-    font-family: 'Outfit', sans-serif;
-    padding: 20px;
+.map-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: var(--primary-color);
 }
 
-.content-box img {
-    height: 290px;
-    width: 290px;
-    border-radius: 20px;
-    margin-bottom: 20px;
+.map-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    cursor: grab;
 }
 
-.texts h2{
-    font-weight: 700;
-    width: 290px;
-    text-align: center;
-    color: var(--dark-blue);
-    margin-bottom: 20px;
+.map-wrapper.dragging {
+    cursor: grabbing;
 }
 
-.texts h4{
-    font-weight: 400;
-    width: 290px;
-    text-align: center;
-    color: var(--grayish-blue);
-    margin-bottom: 20px;    
+.map-content {
+    position: absolute;
+    width: 2000px;
+    height: 2000px;
+    background: 
+        radial-gradient(circle at 25% 25%, rgba(74, 158, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, rgba(74, 158, 255, 0.1) 0%, transparent 50%),
+        linear-gradient(45deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+    transform-origin: 0 0;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+}
+
+.map-content.animating {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.map-grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 100px 100px;
+    opacity: 0.3;
+}
+
+.map-elements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.location-marker {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.marker-icon {
+    width: 24px;
+    height: 24px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    border: 3px solid var(--text-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.marker-icon.mta-marker {
+    background: var(--success-color);
+}
+
+.marker-icon.player-marker {
+    background: var(--warning-color);
+    animation: pulse 2s infinite;
+}
+
+.marker-icon::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background: var(--text-color);
+    border-radius: 50%;
+}
+
+.marker-label {
+    position: absolute;
+    top: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: var(--text-color);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.location-marker:hover .marker-icon {
+    transform: scale(1.2);
+    box-shadow: 0 6px 16px rgba(74, 158, 255, 0.4);
+}
+
+.location-marker:hover .marker-label {
+    opacity: 1;
+}
+
+.map-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+}
+
+.control-btn {
+    width: 44px;
+    height: 44px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-color);
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.control-btn:hover {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    transform: scale(1.05);
+}
+
+.control-btn:active {
+    transform: scale(0.95);
+}
+
+.map-info {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    z-index: 100;
+    font-size: 14px;
+}
+
+.map-info div {
+    margin-bottom: 4px;
+}
+
+.map-info div:last-child {
+    margin-bottom: 0;
+}
+
+.zoom-level, .coordinates {
+    color: var(--text-color);
+}
+
+#zoomValue, #coordX, #coordY {
+    color: var(--accent-color);
+    font-weight: bold;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .map-controls {
+        top: 10px;
+        right: 10px;
+    }
+    
+    .control-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+    
+    .map-info {
+        bottom: 10px;
+        left: 10px;
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    .marker-label {
+        font-size: 11px;
+    }
+}
+
+/* Smooth animations */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.location-marker.pulse .marker-icon {
+    animation: pulse 2s infinite;
 }
